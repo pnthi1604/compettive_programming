@@ -20,42 +20,15 @@ void solve(int n) {
 					dp[i][j][k][l] = -1;
 }
 
-int dq(int i, int tight, int last, int start) {
-	if(i == num.size())
+int dq(int i, int last, int tight, int start) {
+	if(i == num.size()) {
 		return 1;
-	if(dp[i][tight][last][start] != -1)
-		return dp[i][tight][last][start];
-	int res = 0;
-	if(start == 0)
-		res = dq(i + 1, tight, last, start);
-	for(int digit = 0; digit < 10; digit++) {
-		if(digit == last)
-			continue;
-		if(tight == 0 || (start == 0 && i != 0)) {
-			res += dq(i + 1, 0, digit, 1);
-		} else {
-			if(digit > num[i])
-				continue;
-			if(digit == num[i])
-				res += dq(i + 1, 1, digit, 1);
-			else {
-				res += dq(i + 1, 0, digit, 1);
-			}
-		}
 	}
-	return dp[i][tight][last][start] = res;
+	if(dp[i][last][tight][start] != -1) {
+		return dp[i][start][tight][start];
+	}
 }
 
 signed main() {
 	ios::sync_with_stdio(false); cin.tie(0); cout.tie(0);
-	int a, b;
-	cin >> a >> b;
-	solve(b);
-	int resb = dq(0, 1, 0, 0);
-	int resa = 0;
-	if(a != 0) {
-		solve(a - 1);
-		resa = dq(0, 1, 0, 0);
-	}
-	cout << resb - resa;
 }

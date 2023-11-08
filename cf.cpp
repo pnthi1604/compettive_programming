@@ -4,53 +4,69 @@
 #define hi cerr << "HIHIHI\n";
 using namespace std;
 
-const int maxn = (int)1e5, maxm = (int)2e5;
-vector<int> adj[maxn];
-vector<int> topo, dist(maxn, 1), par(maxn, -1);
-vector<bool> used(maxn);
+struct FT {
+    int n;
+    vector<int> bit;
 
-void dfs(int u) {
-    used[u] = true;
-    for(int v : adj[u]) {
-        if(used[v] == false)
-            dfs(v);
+    void init(int _n) {
+        n = _n;
+        bit.resize(n + 1);
     }
-    topo.push_back(u);
-}
+
+    void add(int x, int val) {
+        for(int i = x + 1; i <= n; i += i & -i) {
+            bit[i] += val; 
+        }
+    }
+
+    int get(int x) {
+        int res = 0;
+        for(int i = x + 1; i >= 1; i -= i & -i) {
+            res += bit[i];
+        }
+        return res;
+    }
+
+    int get(int l, int r) {
+        if(l == 0) {
+            return get(r);
+        }
+        return get(r) - get(l - 1);
+    }
+};
 
 signed main() {
     ios_base::sync_with_stdio(false);cin.tie(NULL);
-    int n, m;
-    cin >> n >> m;
-    for(int i = 0; i < m; i++) {
-        int u, v;
-        cin >> u >> v;
-        u--, v--;
-        adj[u].push_back(v);
-    }
-    dfs(0);
-    reverse(topo.begin(), topo.end());
-    for(int u : topo) {
-        for(int v : adj[u]) {
-            if(dist[v] < dist[u] + 1) {
-                dist[v] = dist[u] + 1;
-                par[v] = u;
-            }
+    int n;
+    cin >> n;
+    vector<int> a(n);
+    vector<int> vals;
+    map<int,bool> exist;
+    for(int &x : a) {
+        cin >> x;
+        if(exist.find(x) == exist.end()) {
+            vals.push_back(x);
+            exist[x] = true;
         }
     }
-    if(dist[n - 1] < 2) {
-        cout << "IMPOSSIBLE";
-    } else {
-        vector<int> res;
-        int start = n - 1;
-        while(start != 0) {
-            res.push_back(start + 1);
-            start = par[start];
-        }
-        res.push_back(1);
-        reverse(res.begin(), res.end());
-        cout << res.size() << '\n';
-        for(int x : res)
-            cout << x << ' ';
+    sort(vals.begin(), vals.end());
+    for(int i = 0; i < n; i++) {
+        a[i] = lower_bound(vals.begin(), vals.end(), a[i]) - vals.begin();
     }
+    FT fenMin;
+    fenMin.init(n + 1);
+    vector<int> cnt(vals.size()), rem(n);
+    for(int i = n - 1; i >= 0; i--) {
+        ++cnt[a[i]];
+        fenMin.add(cnt[a[i]], 1);
+        rem[i] = cnt[a[i]];
+    }
+    int ans = 0;
+    cnt.assign(n, 0);
+    for(int i = 0; i < n - 1; i++) {
+        ++cnt[a[i]];
+        fenMin.add(rem[i], -1);
+        ans += fenMin.get(0, cnt[a[i]] - 1);
+    }
+    cout << ans;
 }
